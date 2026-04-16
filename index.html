@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F-NET Internet Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00ff87;
+    --green-dim: #00cc6a;
+    --green-glow: rgba(0,255,135,0.18);
+    --blue: #00c6ff;
+    --orange: #ff8c00;
+    --red: #ff4d6d;
+    --bg: #080e0c;
+    --surface: #0d1610;
+    --card: #101a14;
+    --border: rgba(0,255,135,0.12);
+    --text: #e8f5ee;
+    --muted: #6b8c75;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    text-align: center;
+    padding: 36px 20px 28px;
+    position: relative;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(0,255,135,0.09) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .brand-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--green-glow);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 16px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .brand-tag::before { content: '●'; font-size: 8px; animation: blink 1.4s infinite; }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 14vw, 72px);
+    line-height: 1;
+    letter-spacing: 0.04em;
+    background: linear-gradient(135deg, #00ff87 0%, #00e5ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 20px rgba(0,255,135,0.3));
+    margin-bottom: 6px;
+  }
+
+  .tagline {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 20px;
+  }
+
+  .badges {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .badge.green { border-color: var(--border); color: var(--green); background: var(--green-glow); }
+
+  /* ─── INSTANT DELIVERY BANNER ─── */
+  .instant-banner {
+    background: linear-gradient(135deg, #00ff87 0%, #00c6ff 100%);
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s 0.1s ease both;
+  }
+
+  .instant-banner .label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: #080e0c;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+
+  .instant-banner .sub {
+    font-size: 11px;
+    color: rgba(0,0,0,0.6);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .instant-badge {
+    background: rgba(0,0,0,0.15);
+    border-radius: 8px;
+    padding: 8px 14px;
+    text-align: center;
+  }
+
+  .instant-badge .num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: #080e0c;
+    line-height: 1;
+  }
+
+  .instant-badge .unit {
+    font-size: 10px;
+    color: rgba(0,0,0,0.55);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  /* ─── SECTION HEADER ─── */
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    margin-top: 28px;
+  }
+
+  .section-head .icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: grid; place-items: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .section-head .icon.data { background: rgba(0,255,135,0.12); }
+  .section-head .icon.sms  { background: rgba(0,198,255,0.12); }
+  .section-head .icon.min  { background: rgba(255,76,109,0.12); }
+  .section-head .icon.multi{ background: rgba(255,140,0,0.12); }
+
+  .section-head h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.06em;
+    line-height: 1;
+  }
+
+  .section-head .pill {
+    margin-left: auto;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid;
+    letter-spacing: 0.05em;
+  }
+
+  .pill.green { color: var(--green); border-color: rgba(0,255,135,0.3); }
+  .pill.blue  { color: var(--blue);  border-color: rgba(0,198,255,0.3); }
+  .pill.red   { color: var(--red);   border-color: rgba(255,76,109,0.3); }
+  .pill.orange{ color: var(--orange);border-color: rgba(255,140,0,0.3); }
+
+  /* ─── OFFER GRID ─── */
+  .offer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .offer-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+    cursor: default;
+  }
+
+  .offer-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0,255,135,0.28);
+  }
+
+  .offer-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    opacity: 0.06;
+    transform: translate(20px,-20px);
+  }
+
+  .offer-card.green-card::before { background: var(--green); }
+  .offer-card.blue-card::before  { background: var(--blue); }
+  .offer-card.red-card::before   { background: var(--red); }
+  .offer-card.orange-card::before{ background: var(--orange); }
+
+  .offer-card.green-card { border-color: rgba(0,255,135,0.1); }
+  .offer-card.blue-card  { border-color: rgba(0,198,255,0.1); }
+  .offer-card.red-card   { border-color: rgba(255,76,109,0.1); }
+  .offer-card.orange-card{ border-color: rgba(255,140,0,0.1); }
+
+  .offer-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .green-card .offer-price { color: var(--green); }
+  .blue-card  .offer-price { color: var(--blue); }
+  .red-card   .offer-price { color: var(--red); }
+  .orange-card .offer-price { color: var(--orange); }
+
+  .offer-price span {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    opacity: 0.5;
+    margin-right: 2px;
+    font-weight: 400;
+  }
+
+  .offer-data {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .offer-validity {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+  }
+
+  /* ─── HOW TO PAY ─── */
+  .pay-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 28px;
+    animation: fadeUp 0.5s 0.4s ease both;
+  }
+
+  .pay-section h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.06em;
+    color: var(--green);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .till-box {
+    background: rgba(0,255,135,0.07);
+    border: 1px solid rgba(0,255,135,0.2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .till-label { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; font-family: 'DM Mono', monospace; }
+  .till-number { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--green); letter-spacing: 0.08em; }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: #9dbaa7;
+  }
+
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    background: rgba(0,255,135,0.1);
+    border: 1px solid rgba(0,255,135,0.2);
+    display: grid; place-items: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--green);
+    flex-shrink: 0;
+  }
+
+  .step-arrow {
+    text-align: center;
+    padding: 10px 0 2px 36px;
+  }
+
+  .step-arrow svg { opacity: 0.2; }
+
+  /* ─── CONTACT ─── */
+  .contact-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .contact-card {
+    flex: 1;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .contact-card .icon { font-size: 18px; margin-bottom: 4px; }
+  .contact-card .label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-family: 'DM Mono', monospace; margin-bottom: 2px; }
+  .contact-card .value { font-size: 13px; font-weight: 600; color: var(--text); }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    text-align: center;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    opacity: 0.5;
+  }
+
+  .footer-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .offer-grid .offer-card:nth-child(1) { animation: fadeUp 0.4s 0.05s ease both; }
+  .offer-grid .offer-card:nth-child(2) { animation: fadeUp 0.4s 0.10s ease both; }
+  .offer-grid .offer-card:nth-child(3) { animation: fadeUp 0.4s 0.15s ease both; }
+  .offer-grid .offer-card:nth-child(4) { animation: fadeUp 0.4s 0.20s ease both; }
+  .offer-grid .offer-card:nth-child(5) { animation: fadeUp 0.4s 0.25s ease both; }
+  .offer-grid .offer-card:nth-child(6) { animation: fadeUp 0.4s 0.30s ease both; }
+  .offer-grid .offer-card:nth-child(7) { animation: fadeUp 0.4s 0.35s ease both; }
+  .offer-grid .offer-card:nth-child(8) { animation: fadeUp 0.4s 0.40s ease both; }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,255,135,0.15), transparent);
+    margin: 28px 0;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand-tag">Trusted Plug</div>
+    <div class="logo">F-NET</div>
+    <div class="tagline">Internet Services — Kenya</div>
+    <div class="badges">
+      <div class="badge green">⚡ Instant 2s Delivery</div>
+      <div class="badge">Works Without Okoa</div>
+    </div>
+  </div>
+
+  <!-- INSTANT BANNER -->
+  <div class="instant-banner">
+    <div>
+      <div class="label">Instant Delivery</div>
+      <div class="sub">Fast · Reliable · Affordable</div>
+    </div>
+    <div class="instant-badge">
+      <div class="num">≈2</div>
+      <div class="unit">Seconds</div>
+    </div>
+  </div>
+
+  <!-- DATA OFFERS (Buy Once) -->
+  <div class="section-head">
+    <div class="icon data">📡</div>
+    <h2 style="color:var(--green)">Data Offers</h2>
+    <div class="pill green">Buy Once</div>
+  </div>
+  <div class="offer-grid">
+    <div class="offer-card green-card">
+      <div class="offer-price"><span>Ksh</span>55</div>
+      <div class="offer-data">1.25 GB</div>
+      <div class="offer-validity">Till Midnight</div>
+    </div>
+    <div class="offer-card green-card">
+      <div class="offer-price"><span>Ksh</span>20</div>
+      <div class="offer-data">250 MB</div>
+      <div class="offer-validity">24 Hours</div>
+    </div>
+    <div class="offer-card green-card">
+      <div class="offer-price"><span>Ksh</span>19</div>
+      <div class="offer-data">1 GB</div>
+      <div class="offer-validity">1 Hour</div>
+    </div>
+    <div class="offer-card green-card">
+      <div class="offer-price"><span>Ksh</span>50</div>
+      <div class="offer-data">1.5 GB</div>
+      <div class="offer-validity">3 Hours</div>
+    </div>
+    <div class="offer-card green-card">
+      <div class="offer-price"><span>Ksh</span>110</div>
+      <div class="offer-data">2 GB</div>
+      <div class="offer-validity">24 Hours</div>
+    </div>
+    <div class="offer-card green-card">
+      <div class="offer-price"><span>Ksh</span>300</div>
+      <div class="offer-data">2.5 GB</div>
+      <div class="offer-validity">7 Days</div>
+    </div>
+    <div class="offer-card green-card">
+      <div class="offer-price"><span>Ksh</span>700</div>
+      <div class="offer-data">6 GB</div>
+      <div class="offer-validity">7 Days</div>
+    </div>
+    <div class="offer-card green-card">
+      <div class="offer-price"><span>Ksh</span>49</div>
+      <div class="offer-data">350 MB</div>
+      <div class="offer-validity">7 Days</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SMS OFFERS -->
+  <div class="section-head">
+    <div class="icon sms">💌</div>
+    <h2 style="color:var(--blue)">SMS Offers</h2>
+    <div class="pill blue">Bulk SMS</div>
+  </div>
+  <div class="offer-grid">
+    <div class="offer-card blue-card">
+      <div class="offer-price" style="color:var(--blue)"><span>Ksh</span>5</div>
+      <div class="offer-data">20 SMS</div>
+      <div class="offer-validity">1 Day</div>
+    </div>
+    <div class="offer-card blue-card">
+      <div class="offer-price" style="color:var(--blue)"><span>Ksh</span>10</div>
+      <div class="offer-data">200 SMS</div>
+      <div class="offer-validity">1 Day</div>
+    </div>
+    <div class="offer-card blue-card">
+      <div class="offer-price" style="color:var(--blue)"><span>Ksh</span>30</div>
+      <div class="offer-data">1,000 SMS</div>
+      <div class="offer-validity">7 Days</div>
+    </div>
+    <div class="offer-card blue-card">
+      <div class="offer-price" style="color:var(--blue)"><span>Ksh</span>101</div>
+      <div class="offer-data">1,500 SMS</div>
+      <div class="offer-validity">30 Days</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- MINUTES OFFERS -->
+  <div class="section-head">
+    <div class="icon min">📞</div>
+    <h2 style="color:var(--red)">Minutes Offers</h2>
+    <div class="pill red">Talk Time</div>
+  </div>
+  <div class="offer-grid">
+    <div class="offer-card red-card">
+      <div class="offer-price" style="color:var(--red)"><span>Ksh</span>22</div>
+      <div class="offer-data">45 Min</div>
+      <div class="offer-validity">3 Hours</div>
+    </div>
+    <div class="offer-card red-card">
+      <div class="offer-price" style="color:var(--red)"><span>Ksh</span>51</div>
+      <div class="offer-data">60 Min</div>
+      <div class="offer-validity">Till Midnight</div>
+    </div>
+    <div class="offer-card red-card">
+      <div class="offer-price" style="color:var(--red)"><span>Ksh</span>100</div>
+      <div class="offer-data">100 Min</div>
+      <div class="offer-validity">24 Hours</div>
+    </div>
+    <div class="offer-card red-card">
+      <div class="offer-price" style="color:var(--red)"><span>Ksh</span>199</div>
+      <div class="offer-data">250 Min</div>
+      <div class="offer-validity">7 Days</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- MULTI-PURCHASE -->
+  <div class="section-head">
+    <div class="icon multi">🔥</div>
+    <h2 style="color:var(--orange)">Multi-Purchase</h2>
+    <div class="pill orange">Buy Multiple Times</div>
+  </div>
+  <div class="offer-grid">
+    <div class="offer-card orange-card">
+      <div class="offer-price" style="color:var(--orange)"><span>Ksh</span>21</div>
+      <div class="offer-data">1 GB</div>
+      <div class="offer-validity">1 Hour</div>
+    </div>
+    <div class="offer-card orange-card">
+      <div class="offer-price" style="color:var(--orange)"><span>Ksh</span>52</div>
+      <div class="offer-data">1.5 GB</div>
+      <div class="offer-validity">3 Hours</div>
+    </div>
+    <div class="offer-card orange-card" style="grid-column: span 2;">
+      <div class="offer-price" style="color:var(--orange)"><span>Ksh</span>110</div>
+      <div class="offer-data">2 GB</div>
+      <div class="offer-validity">24 Hours</div>
+    </div>
+  </div>
+
+  <!-- HOW TO PAY -->
+  <div class="pay-section">
+    <h2>💳 How to Pay</h2>
+    <div class="till-box">
+      <div>
+        <div class="till-label">Lipa Na M-Pesa · Till Number</div>
+        <div class="till-number">6921672</div>
+      </div>
+      <div style="font-size:28px">📱</div>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div>Open M-Pesa</div>
+      <div class="step"><div class="step-num">2</div>Select Lipa na M-Pesa</div>
+      <div class="step"><div class="step-num">3</div>Choose Buy Goods &amp; Services</div>
+      <div class="step"><div class="step-num">4</div>Enter Till → <strong style="color:var(--green)">6921672</strong></div>
+      <div class="step"><div class="step-num">5</div>Enter the exact amount</div>
+      <div class="step"><div class="step-num">6</div>Enter your M-Pesa PIN</div>
+      <div class="step" style="color:var(--green); font-weight:600">⚡ Package arrives in ~2 seconds</div>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="contact-bar">
+    <div class="contact-card">
+      <div class="icon">☎️</div>
+      <div class="label">Support</div>
+      <div class="value">0707029967</div>
+    </div>
+    <div class="contact-card">
+      <div class="icon">💬</div>
+      <div class="label">Price List</div>
+      <div class="value">Send "offers"</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-logo">F-NET INTERNET SERVICES</div>
+    <div class="footer-sub">Your Smart Bundle Plug · Kenya</div>
+  </div>
+
+</div>
+</body>
+</html>
